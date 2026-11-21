@@ -4,24 +4,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase as sb, isSupabaseConfigured } from "@/lib/supabase";
 import styles from "./admin.module.css";
-import {
-  FiLock,
-  FiMail,
-  FiEye,
-  FiEyeOff,
-  FiLogOut,
-  FiExternalLink,
-  FiUploadCloud,
-  FiCheck,
-  FiArrowUp,
-  FiArrowDown,
-  FiEdit2,
-  FiTrash2,
-  FiAlertCircle,
-  FiImage,
-  FiPackage,
-  FiUser,
-} from "react-icons/fi";
 
 const BUCKET = "product-images";
 
@@ -63,7 +45,7 @@ function shrink(file: File, max = 480): Promise<Blob> {
 }
 
 // ----------------------------------------------------------------
-// Admin Page Component
+// Admin Page Component (Redesain Minimalis)
 // ----------------------------------------------------------------
 export default function AdminPage() {
   // Auth state
@@ -74,7 +56,6 @@ export default function AdminPage() {
   const [authMode, setAuthMode] = useState<"password" | "magic-link">("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
@@ -381,14 +362,11 @@ export default function AdminPage() {
     return (
       <div className={styles.root}>
         <main className={styles.loginContainer}>
-          <div className={styles.panel}>
-            <div className={styles.panelTitle} style={{ color: "var(--danger)" }}>
-              <FiAlertCircle /> Konfigurasi Belum Lengkap
-            </div>
-            <p className={styles.switchDesc} style={{ marginTop: "8px" }}>
+          <div>
+            <h1 className={styles.h1}>Konfigurasi Belum Lengkap</h1>
+            <p className={styles.subtitle} style={{ color: "var(--danger)" }}>
               Environment variable <code>NEXT_PUBLIC_SUPABASE_URL</code> dan{" "}
-              <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> belum diisi di{" "}
-              <code>.env.local</code>.
+              <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> belum diisi di <code>.env.local</code>.
             </p>
           </div>
         </main>
@@ -398,277 +376,226 @@ export default function AdminPage() {
 
   if (!authReady) return null;
 
-  // ---- TAMPILAN LOGIN ----
+  // ---- TAMPILAN LOGIN MINIMALIS ----
   if (!session) {
     return (
       <div className={styles.root}>
         <main className={styles.loginContainer}>
-          <div className={styles.panel}>
-            <div style={{ textAlign: "center", marginBottom: "20px" }}>
-              <div
-                className={styles.brandIcon}
-                style={{ margin: "0 auto 12px", width: "48px", height: "48px", fontSize: "1.5rem" }}
-              >
-                <FiLock />
+          <div>
+            <h1 className={styles.h1}>Masuk Admin</h1>
+            <p className={styles.subtitle}>Kelola produk bio-link</p>
+          </div>
+
+          {/* Mode Tabs */}
+          <div className={styles.tabs}>
+            <button
+              type="button"
+              className={`${styles.tab} ${authMode === "password" ? styles.tabActive : ""}`}
+              onClick={() => {
+                setAuthMode("password");
+                setAuthFeedback(null);
+              }}
+            >
+              Password
+            </button>
+            <button
+              type="button"
+              className={`${styles.tab} ${authMode === "magic-link" ? styles.tabActive : ""}`}
+              onClick={() => {
+                setAuthMode("magic-link");
+                setAuthFeedback(null);
+              }}
+            >
+              Link Email / OTP
+            </button>
+          </div>
+
+          {/* Form Password */}
+          {authMode === "password" && (
+            <form onSubmit={handlePasswordLogin} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div className={styles.formGroup}>
+                <label className={styles.label} htmlFor="login-email">
+                  Email akun Supabase
+                </label>
+                <input
+                  id="login-email"
+                  className={styles.fld}
+                  type="email"
+                  required
+                  placeholder="admin@email.com"
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
-              <h1 className={styles.panelTitle} style={{ justifyContent: "center", fontSize: "1.35rem" }}>
-                Admin Masuk
-              </h1>
-              <p className={styles.switchDesc} style={{ marginTop: "4px" }}>
-                Masuk menggunakan akun Supabase Authentication Anda
-              </p>
-            </div>
 
-            {/* Tabs Mode Login */}
-            <div className={styles.authTabs}>
-              <button
-                type="button"
-                className={`${styles.authTab} ${authMode === "password" ? styles.authTabActive : ""}`}
-                onClick={() => {
-                  setAuthMode("password");
-                  setAuthFeedback(null);
-                }}
-              >
-                <FiLock /> Password
-              </button>
-              <button
-                type="button"
-                className={`${styles.authTab} ${authMode === "magic-link" ? styles.authTabActive : ""}`}
-                onClick={() => {
-                  setAuthMode("magic-link");
-                  setAuthFeedback(null);
-                }}
-              >
-                <FiMail /> Link Email / OTP
-              </button>
-            </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label} htmlFor="login-password">
+                  Password
+                </label>
+                <input
+                  id="login-password"
+                  className={styles.fld}
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
 
-            {/* Form Mode Password */}
-            {authMode === "password" && (
-              <form onSubmit={handlePasswordLogin}>
-                <div className={styles.formGroup}>
-                  <label className={styles.label} htmlFor="login-email">
-                    Email Akun Supabase
-                  </label>
-                  <div className={styles.inputWrapper}>
-                    <FiMail className={styles.inputIcon} />
+              <button
+                type="submit"
+                className={styles.saveBtn}
+                style={{ width: "100%", justifyContent: "center", marginTop: "4px" }}
+                disabled={authLoading}
+              >
+                {authLoading ? "Memproses..." : "Masuk dengan Password"}
+              </button>
+            </form>
+          )}
+
+          {/* Form Magic Link / OTP */}
+          {authMode === "magic-link" && (
+            <div>
+              {!otpSent ? (
+                <form onSubmit={handleMagicLink} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} htmlFor="magic-email">
+                      Email terdaftar di Supabase
+                    </label>
                     <input
-                      id="login-email"
-                      className={`${styles.input} ${styles.inputWithIcon}`}
+                      id="magic-email"
+                      className={styles.fld}
                       type="email"
                       required
                       placeholder="admin@email.com"
-                      autoComplete="username"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
-                </div>
 
-                <div className={styles.formGroup}>
-                  <label className={styles.label} htmlFor="login-password">
-                    Password
-                  </label>
-                  <div className={styles.inputWrapper}>
-                    <FiLock className={styles.inputIcon} />
+                  <button
+                    type="submit"
+                    className={styles.saveBtn}
+                    style={{ width: "100%", justifyContent: "center", marginTop: "4px" }}
+                    disabled={authLoading}
+                  >
+                    {authLoading ? "Mengirim..." : "Kirim Tautan / OTP ke Email"}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyOtp} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} htmlFor="otp-input">
+                      Masukkan Kode OTP 6 Digit dari Email
+                    </label>
                     <input
-                      id="login-password"
-                      className={`${styles.input} ${styles.inputWithIcon}`}
-                      type={showPassword ? "text" : "password"}
+                      id="otp-input"
+                      className={styles.fld}
+                      type="text"
                       required
-                      placeholder="••••••••"
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="123456"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value)}
                     />
-                    <button
-                      type="button"
-                      className={styles.togglePasswordBtn}
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label="Lihat password"
-                    >
-                      {showPassword ? <FiEyeOff /> : <FiEye />}
-                    </button>
                   </div>
-                </div>
 
-                <button
-                  type="submit"
-                  className={`${styles.btn} ${styles.btnPrimary}`}
-                  style={{ width: "100%", marginTop: "8px" }}
-                  disabled={authLoading}
-                >
-                  {authLoading ? <div className={styles.spinner} /> : "Masuk dengan Password"}
-                </button>
-              </form>
-            )}
+                  <button
+                    type="submit"
+                    className={styles.saveBtn}
+                    style={{ width: "100%", justifyContent: "center" }}
+                    disabled={authLoading}
+                  >
+                    {authLoading ? "Memverifikasi..." : "Verifikasi & Masuk"}
+                  </button>
 
-            {/* Form Mode Magic Link / OTP */}
-            {authMode === "magic-link" && (
-              <div>
-                {!otpSent ? (
-                  <form onSubmit={handleMagicLink}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label} htmlFor="magic-email">
-                        Email Terdaftar di Supabase
-                      </label>
-                      <div className={styles.inputWrapper}>
-                        <FiMail className={styles.inputIcon} />
-                        <input
-                          id="magic-email"
-                          className={`${styles.input} ${styles.inputWithIcon}`}
-                          type="email"
-                          required
-                          placeholder="admin@email.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                        />
-                      </div>
-                    </div>
+                  <button
+                    type="button"
+                    className={styles.lnk}
+                    style={{ justifyContent: "center" }}
+                    onClick={() => setOtpSent(false)}
+                  >
+                    Kirim ulang ke email lain
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
 
-                    <button
-                      type="submit"
-                      className={`${styles.btn} ${styles.btnPrimary}`}
-                      style={{ width: "100%", marginTop: "8px" }}
-                      disabled={authLoading}
-                    >
-                      {authLoading ? <div className={styles.spinner} /> : "Kirim Tautan / OTP ke Email"}
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleVerifyOtp}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.label} htmlFor="otp-input">
-                        Masukkan Kode OTP 6 Digit dari Email
-                      </label>
-                      <div className={styles.inputWrapper}>
-                        <FiLock className={styles.inputIcon} />
-                        <input
-                          id="otp-input"
-                          className={`${styles.input} ${styles.inputWithIcon}`}
-                          type="text"
-                          required
-                          placeholder="123456"
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value)}
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      className={`${styles.btn} ${styles.btnPrimary}`}
-                      style={{ width: "100%", marginTop: "8px" }}
-                      disabled={authLoading}
-                    >
-                      {authLoading ? <div className={styles.spinner} /> : "Verifikasi & Masuk"}
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`${styles.btn} ${styles.btnGhost}`}
-                      style={{ width: "100%", marginTop: "8px" }}
-                      onClick={() => setOtpSent(false)}
-                    >
-                      Kirim ulang ke email lain
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
-
-            {/* Feedback Message */}
-            {authFeedback && (
-              <div
-                className={`${styles.alert} ${
-                  authFeedback.isError ? styles.alertError : styles.alertSuccess
-                }`}
-              >
-                <FiAlertCircle style={{ fontSize: "1.1rem", flexShrink: 0, marginTop: "2px" }} />
-                <span>{authFeedback.text}</span>
-              </div>
-            )}
-          </div>
+          {/* Feedback */}
+          {authFeedback && (
+            <div
+              className={`${styles.feedback} ${
+                authFeedback.isError ? styles.feedbackError : styles.feedbackSuccess
+              }`}
+            >
+              {authFeedback.text}
+            </div>
+          )}
         </main>
       </div>
     );
   }
 
-  // ---- TAMPILAN DASHBOARD ADMIN ----
+  // ---- TAMPILAN DASHBOARD REDESAIN MINIMALIS ----
   return (
     <div className={styles.root}>
-      <main className={styles.container}>
-        {/* Top Navbar */}
-        <header className={styles.topBar}>
-          <div className={styles.brand}>
-            <div className={styles.brandIcon}>
-              <FiPackage />
-            </div>
-            <div>
-              <div className={styles.brandTitle}>Admin Produk</div>
-              <div className={styles.switchDesc}>Kelola produk bio-link</div>
-            </div>
+      <div className={styles.container}>
+        {/* Header Sesuai Desain Minimalis */}
+        <header className={styles.header}>
+          <div>
+            <h1 className={styles.h1}>Produk</h1>
+            <p className={styles.subtitle}>Kelola produk bio-link</p>
           </div>
-
-          <div className={styles.topActions}>
+          <nav className={styles.nav}>
             {session.user?.email && (
-              <span className={styles.userBadge} title={session.user.email}>
-                <FiUser /> {session.user.email}
-              </span>
+              <span className={styles.userEmail}>{session.user.email}</span>
             )}
-            <a
-              href="/"
-              target="_blank"
-              rel="noreferrer"
-              className={`${styles.btn} ${styles.btnSmall}`}
-              title="Buka halaman publik di tab baru"
-            >
-              <FiExternalLink /> Lihat Web
+            <a className={styles.lnk} href="/" target="_blank" rel="noopener noreferrer">
+              Lihat web
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M7 17 17 7M8 7h9v9" />
+              </svg>
             </a>
-            <button
-              type="button"
-              className={`${styles.btn} ${styles.btnSmall} ${styles.btnDanger}`}
-              onClick={handleLogout}
-            >
-              <FiLogOut /> Keluar
+            <button type="button" className={styles.lnk} onClick={handleLogout}>
+              Keluar
             </button>
-          </div>
+          </nav>
         </header>
 
-        {/* Panel Form Tambah/Edit */}
-        <section className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <h2 className={styles.panelTitle}>
-              {editingId !== null ? (
-                <>
-                  <FiEdit2 /> Edit Produk
-                  <span className={styles.badgeCount}>Mode Edit</span>
-                </>
-              ) : (
-                <>
-                  <FiPackage /> Tambah Produk Baru
-                </>
-              )}
+        {/* Section Form Tambah / Edit */}
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.h2}>
+              {editingId !== null ? "Edit produk" : "Tambah produk baru"}
             </h2>
             {editingId !== null && (
-              <button
-                type="button"
-                className={`${styles.btn} ${styles.btnSmall} ${styles.btnGhost}`}
-                onClick={resetForm}
-              >
-                Batal Edit
+              <button type="button" className={styles.lnk} onClick={resetForm}>
+                Batal edit
               </button>
             )}
           </div>
 
-          <form onSubmit={handleSaveProduct}>
+          <form onSubmit={handleSaveProduct} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
             <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="product-title">
-                Judul Produk
+              <label htmlFor="judul" className={styles.label}>
+                Judul produk
               </label>
               <input
-                id="product-title"
-                className={styles.input}
+                className={styles.fld}
+                id="judul"
                 type="text"
                 required
                 placeholder="Contoh: Kemeja Oversize Linen Premium"
@@ -678,12 +605,12 @@ export default function AdminPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label} htmlFor="product-url">
-                Link Produk (Afiliasi / Toko Online)
+              <label htmlFor="link" className={styles.label}>
+                Link produk <span className={styles.labelDesc}>(afiliasi / toko online)</span>
               </label>
               <input
-                id="product-url"
-                className={styles.input}
+                className={styles.fld}
+                id="link"
                 type="url"
                 required
                 placeholder="https://shopee.co.id/..."
@@ -692,41 +619,66 @@ export default function AdminPage() {
               />
             </div>
 
-            {/* Bagian Upload Foto */}
+            {/* Bagian Foto Produk */}
             <div className={styles.formGroup}>
-              <label className={styles.label}>Foto Produk</label>
-              <div className={styles.uploadSection}>
-                {previewSrc ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    className={styles.previewThumb}
-                    src={previewSrc}
-                    alt="Pratinjau"
-                    onError={() => setPreviewSrc("")}
-                  />
-                ) : (
-                  <div className={styles.previewPlaceholder}>
-                    <FiImage />
-                  </div>
-                )}
+              <span className={styles.label}>Foto produk</span>
+              <div className={styles.photoRow}>
+                <div className={styles.photoPreview}>
+                  {previewSrc ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={previewSrc} alt="" onError={() => setPreviewSrc("")} />
+                  ) : (
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="3" />
+                      <circle cx="9" cy="9" r="1.5" />
+                      <path d="m21 15-4.5-4.5L6 21" />
+                    </svg>
+                  )}
+                </div>
 
-                <div className={styles.uploadInputs}>
-                  <label className={styles.fileBtn}>
-                    <FiUploadCloud /> {uploading ? "Mengunggah..." : "Pilih Berkas Foto"}
+                <div className={styles.photoActions}>
+                  <label className={styles.btnO} htmlFor="foto">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 16V4m0 0L7 9m5-5 5 5M4 20h16" />
+                    </svg>
+                    {uploading ? "Mengunggah..." : "Pilih berkas foto"}
                     <input
-                      ref={fileRef}
+                      className={styles.sr}
+                      id="foto"
                       type="file"
                       accept="image/*"
-                      className={styles.hiddenFileInput}
+                      ref={fileRef}
                       onChange={handleFileUpload}
                       disabled={uploading}
                     />
                   </label>
 
                   <input
-                    className={styles.input}
+                    className={styles.fld}
+                    id="url-foto"
                     type="url"
-                    placeholder="Atau tempel link gambar (URL) di sini..."
+                    aria-label="Link gambar"
+                    placeholder="Atau tempel link gambar (URL)"
                     value={imageUrl}
                     onChange={(e) => {
                       setImageUrl(e.target.value);
@@ -737,179 +689,172 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Toggle Status Aktif */}
-            <div
-              className={styles.switchContainer}
-              onClick={() => setActive(!active)}
-              role="button"
-              tabIndex={0}
-            >
-              <div className={styles.switchInfo}>
-                <span className={styles.switchLabel}>Tampilkan di Website</span>
-                <span className={styles.switchDesc}>
-                  {active
-                    ? "Produk ini akan langsung terlihat oleh pengunjung web"
-                    : "Produk ini disembunyikan sementara dari web"}
-                </span>
-              </div>
-              <div className={`${styles.switchPill} ${active ? styles.switchPillActive : ""}`}>
-                <div className={`${styles.switchKnob} ${active ? styles.switchKnobActive : ""}`} />
-              </div>
-            </div>
+            {/* Switch Tampilkan di Website */}
+            <label className={styles.switchRow}>
+              <span className={styles.switchText}>
+                <span className={styles.switchTitle}>Tampilkan di website</span>
+                <span className={styles.switchDesc}>Produk langsung terlihat oleh pengunjung web</span>
+              </span>
+              <input
+                className={styles.switch}
+                type="checkbox"
+                checked={active}
+                onChange={(e) => setActive(e.target.checked)}
+              />
+            </label>
 
-            {/* Tombol Aksi Form */}
-            <div className={styles.formActions}>
-              <button
-                type="submit"
-                className={`${styles.btn} ${styles.btnPrimary}`}
-                disabled={saving || uploading}
-              >
-                {saving ? (
-                  <>
-                    <div className={styles.spinner} /> Menyimpan...
-                  </>
-                ) : (
-                  <>
-                    <FiCheck /> {editingId !== null ? "Perbarui Produk" : "Simpan Produk"}
-                  </>
-                )}
+            {/* Tombol Simpan */}
+            <div className={styles.formActionsRow}>
+              <button className={styles.saveBtn} type="submit" disabled={saving || uploading}>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m5 12 5 5L20 7" />
+                </svg>
+                {saving
+                  ? "Menyimpan..."
+                  : editingId !== null
+                  ? "Perbarui produk"
+                  : "Simpan produk"}
               </button>
 
               {editingId !== null && (
-                <button
-                  type="button"
-                  className={styles.btn}
-                  onClick={resetForm}
-                >
+                <button className={styles.btnO} type="button" onClick={resetForm}>
                   Batal
                 </button>
               )}
             </div>
 
-            {/* Form Alert Message */}
+            {/* Feedback simpan */}
             {formMsg && (
               <div
-                className={`${styles.alert} ${
-                  formMsg.isError ? styles.alertError : styles.alertSuccess
+                className={`${styles.feedback} ${
+                  formMsg.isError ? styles.feedbackError : styles.feedbackSuccess
                 }`}
               >
-                <FiAlertCircle style={{ fontSize: "1.1rem", flexShrink: 0, marginTop: "2px" }} />
-                <span>{formMsg.text}</span>
+                {formMsg.text}
               </div>
             )}
           </form>
         </section>
 
-        {/* Panel Daftar Produk */}
-        <section className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <h2 className={styles.panelTitle}>
-              Daftar Produk <span className={styles.badgeCount}>{items.length}</span>
-            </h2>
+        {/* Section Daftar Produk */}
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.h2}>Daftar produk</h2>
+            <span className={styles.count}>{items.length}</span>
           </div>
 
           {items.length === 0 ? (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>
-                <FiPackage />
-              </div>
-              <div className={styles.emptyText}>Belum ada produk</div>
-              <p className={styles.switchDesc} style={{ marginTop: "4px" }}>
+            <div className={styles.emptyBox}>
+              <p className={styles.emptyTitle}>Belum ada produk</p>
+              <p className={styles.emptyDesc}>
                 Gunakan formulir di atas untuk menambahkan produk pertama Anda.
               </p>
             </div>
           ) : (
-            <ol className={styles.list}>
+            <ol className={styles.productList}>
               {items.map((it, i) => (
                 <li
                   key={it.id}
-                  className={`${styles.cardRow} ${!it.is_active ? styles.cardRowOff : ""}`}
+                  className={`${styles.productItem} ${!it.is_active ? styles.productItemOff : ""}`}
                 >
-                  {/* Nomor Urut */}
-                  <div className={styles.rowNumber}>{i + 1}</div>
+                  <span className={styles.productIndex}>{i + 1}</span>
 
-                  {/* Thumbnail Gambar */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    className={styles.rowThumb}
+                    className={styles.productThumb}
                     src={it.image ?? undefined}
-                    alt={it.title}
+                    alt=""
                     loading="lazy"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).removeAttribute("src");
                     }}
                   />
 
-                  {/* Detail Produk */}
-                  <div className={styles.rowDetails}>
-                    <div className={styles.rowTitle}>{it.title}</div>
+                  <div className={styles.productInfo}>
+                    <div className={styles.productTitle}>{it.title}</div>
                     <a
+                      className={styles.productUrl}
                       href={it.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={styles.rowUrl}
-                      title="Buka link produk"
+                      title={it.url}
                     >
-                      <FiExternalLink /> {it.url}
+                      {it.url}
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M7 17 17 7M8 7h9v9" />
+                      </svg>
                     </a>
-                    <span
-                      className={`${styles.statusBadge} ${
-                        it.is_active ? styles.statusActive : styles.statusInactive
-                      }`}
-                    >
-                      <span className={styles.statusDot} />
-                      {it.is_active ? "Tampil di Web" : "Disembunyikan"}
-                    </span>
                   </div>
 
-                  {/* Tombol Aksi */}
-                  <div className={styles.rowTools}>
-                    <label className={styles.toolCheckLabel}>
+                  <div className={styles.productActions}>
+                    <label className={styles.productToggleLabel}>
                       <input
+                        className={styles.switch}
+                        style={{ width: "36px", height: "20px" }}
                         type="checkbox"
                         checked={it.is_active}
                         onChange={(e) => handleToggle(it, e.target.checked)}
                       />
-                      Aktifkan
+                      {it.is_active ? "Tampil di website" : "Disembunyikan"}
                     </label>
 
-                    <div className={styles.toolGroup}>
+                    <div className={styles.btnGroup}>
                       <button
                         type="button"
-                        className={`${styles.btn} ${styles.btnSmall} ${styles.btnIconOnly}`}
+                        className={`${styles.btnO} ${styles.btnIcon}`}
                         disabled={i === 0}
                         aria-label="Naikkan urutan"
                         title="Naikkan urutan"
                         onClick={() => handleMove(i, -1)}
                       >
-                        <FiArrowUp />
+                        ↑
                       </button>
 
                       <button
                         type="button"
-                        className={`${styles.btn} ${styles.btnSmall} ${styles.btnIconOnly}`}
+                        className={`${styles.btnO} ${styles.btnIcon}`}
                         disabled={i === items.length - 1}
                         aria-label="Turunkan urutan"
                         title="Turunkan urutan"
                         onClick={() => handleMove(i, 1)}
                       >
-                        <FiArrowDown />
+                        ↓
                       </button>
 
                       <button
                         type="button"
-                        className={`${styles.btn} ${styles.btnSmall}`}
+                        className={`${styles.btnO} ${styles.btnSmall}`}
                         onClick={() => startEdit(it)}
                       >
-                        <FiEdit2 /> Edit
+                        Edit
                       </button>
 
                       <button
                         type="button"
-                        className={`${styles.btn} ${styles.btnSmall} ${styles.btnDanger}`}
+                        className={`${styles.btnO} ${styles.btnSmall} ${styles.btnDanger}`}
                         onClick={() => handleRemove(it)}
                       >
-                        <FiTrash2 /> Hapus
+                        Hapus
                       </button>
                     </div>
                   </div>
@@ -918,7 +863,7 @@ export default function AdminPage() {
             </ol>
           )}
         </section>
-      </main>
+      </div>
     </div>
   );
 }

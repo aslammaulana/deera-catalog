@@ -45,7 +45,7 @@ function shrink(file: File, max = 480): Promise<Blob> {
 }
 
 // ----------------------------------------------------------------
-// Admin Page Component (Redesain Minimalis)
+// Admin Page Component
 // ----------------------------------------------------------------
 export default function AdminPage() {
   // Auth state
@@ -67,6 +67,9 @@ export default function AdminPage() {
   // Product list
   const [items, setItems] = useState<Product[]>([]);
 
+  // Popup Sidebar Drawer state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   // Product Form state
   const [editingId, setEditingId] = useState<number | null>(null);
   const [title, setTitle] = useState("");
@@ -83,6 +86,28 @@ export default function AdminPage() {
 
   const fileRef = useRef<HTMLInputElement>(null);
   const loadRef = useRef<(() => Promise<void>) | null>(null);
+
+  // Lock body scroll saat sidebar terbuka & tangani tombol Escape
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isSidebarOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSidebarOpen]);
 
   // ---- Load produk ----
   const load = useCallback(async () => {
@@ -107,7 +132,6 @@ export default function AdminPage() {
   useEffect(() => {
     if (!isSupabaseConfigured) return;
 
-    // Ambil session awal
     sb.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setAuthReady(true);
@@ -116,7 +140,6 @@ export default function AdminPage() {
       }
     });
 
-    // Subscribe auth changes — defer panggil supabase via setTimeout agar tidak deadlock
     const { data: listener } = sb.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setAuthReady(true);
@@ -230,7 +253,7 @@ export default function AdminPage() {
     sb.auth.signOut();
   }
 
-  // ---- Form Handlers ----
+  // ---- Form & Sidebar Handlers ----
   function resetForm() {
     setEditingId(null);
     setTitle("");
@@ -242,6 +265,16 @@ export default function AdminPage() {
     if (fileRef.current) fileRef.current.value = "";
   }
 
+  function handleOpenAdd() {
+    resetForm();
+    setIsSidebarOpen(true);
+  }
+
+  function handleCloseSidebar() {
+    setIsSidebarOpen(false);
+    resetForm();
+  }
+
   function startEdit(it: Product) {
     setEditingId(it.id);
     setTitle(it.title);
@@ -250,7 +283,7 @@ export default function AdminPage() {
     setActive(it.is_active);
     setPreviewSrc(it.image ?? "");
     setFormMsg(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setIsSidebarOpen(true);
   }
 
   async function handleSaveProduct(e: React.FormEvent) {
@@ -284,7 +317,7 @@ export default function AdminPage() {
     }
 
     resetForm();
-    setFormMsg({ text: "Produk berhasil disimpan!", isError: false });
+    setIsSidebarOpen(false);
     load();
   }
 
@@ -321,7 +354,10 @@ export default function AdminPage() {
     if (error) {
       setFormMsg({ text: "Gagal menghapus: " + error.message, isError: true });
     }
-    if (editingId === it.id) resetForm();
+    if (editingId === it.id) {
+      resetForm();
+      setIsSidebarOpen(false);
+    }
     load();
   }
 
@@ -539,20 +575,17 @@ export default function AdminPage() {
     );
   }
 
-  // ---- TAMPILAN DASHBOARD REDESAIN MINIMALIS ----
+  // ---- TAMPILAN DASHBOARD MINIMALIS ----
   return (
     <div className={styles.root}>
       <div className={styles.container}>
-        {/* Header Sesuai Desain Minimalis */}
+        {/* Header (Email disembunyikan sesuai permintaan) */}
         <header className={styles.header}>
           <div>
             <h1 className={styles.h1}>Produk</h1>
             <p className={styles.subtitle}>Kelola produk bio-link</p>
           </div>
           <nav className={styles.nav}>
-            {session.user?.email && (
-              <span className={styles.userEmail}>{session.user.email}</span>
-            )}
             <a className={styles.lnk} href="/" target="_blank" rel="noopener noreferrer">
               Lihat web
               <svg
@@ -575,137 +608,48 @@ export default function AdminPage() {
           </nav>
         </header>
 
-        {/* Section Form Tambah / Edit */}
+        {/* Section Utama: Daftar Produk + Tombol Tambah Produk */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.h2}>
-              {editingId !== null ? "Edit produk" : "Tambah produk baru"}
-            </h2>
-            {editingId !== null && (
-              <button type="button" className={styles.lnk} onClick={resetForm}>
-                Batal edit
-              </button>
-            )}
+            <div className={styles.sectionTitleGroup}>
+              <h2 className={styles.h2}>Daftar produk</h2>
+              <span className={styles.count}>{items.length}</span>
+            </div>
+
+            <button
+              type="button"
+              className={styles.saveBtn}
+              onClick={handleOpenAdd}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14m-7-7h14" />
+              </svg>
+              Tambah produk
+            </button>
           </div>
 
-          <form onSubmit={handleSaveProduct} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-            <div className={styles.formGroup}>
-              <label htmlFor="judul" className={styles.label}>
-                Judul produk
-              </label>
-              <input
-                className={styles.fld}
-                id="judul"
-                type="text"
-                required
-                placeholder="Contoh: Kemeja Oversize Linen Premium"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label htmlFor="link" className={styles.label}>
-                Link produk <span className={styles.labelDesc}>(afiliasi / toko online)</span>
-              </label>
-              <input
-                className={styles.fld}
-                id="link"
-                type="url"
-                required
-                placeholder="https://shopee.co.id/..."
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-              />
-            </div>
-
-            {/* Bagian Foto Produk */}
-            <div className={styles.formGroup}>
-              <span className={styles.label}>Foto produk</span>
-              <div className={styles.photoRow}>
-                <div className={styles.photoPreview}>
-                  {previewSrc ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={previewSrc} alt="" onError={() => setPreviewSrc("")} />
-                  ) : (
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <rect x="3" y="3" width="18" height="18" rx="3" />
-                      <circle cx="9" cy="9" r="1.5" />
-                      <path d="m21 15-4.5-4.5L6 21" />
-                    </svg>
-                  )}
-                </div>
-
-                <div className={styles.photoActions}>
-                  <label className={styles.btnO} htmlFor="foto">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M12 16V4m0 0L7 9m5-5 5 5M4 20h16" />
-                    </svg>
-                    {uploading ? "Mengunggah..." : "Pilih berkas foto"}
-                    <input
-                      className={styles.sr}
-                      id="foto"
-                      type="file"
-                      accept="image/*"
-                      ref={fileRef}
-                      onChange={handleFileUpload}
-                      disabled={uploading}
-                    />
-                  </label>
-
-                  <input
-                    className={styles.fld}
-                    id="url-foto"
-                    type="url"
-                    aria-label="Link gambar"
-                    placeholder="Atau tempel link gambar (URL)"
-                    value={imageUrl}
-                    onChange={(e) => {
-                      setImageUrl(e.target.value);
-                      setPreviewSrc(e.target.value.trim());
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Switch Tampilkan di Website */}
-            <label className={styles.switchRow}>
-              <span className={styles.switchText}>
-                <span className={styles.switchTitle}>Tampilkan di website</span>
-                <span className={styles.switchDesc}>Produk langsung terlihat oleh pengunjung web</span>
-              </span>
-              <input
-                className={styles.switch}
-                type="checkbox"
-                checked={active}
-                onChange={(e) => setActive(e.target.checked)}
-              />
-            </label>
-
-            {/* Tombol Simpan */}
-            <div className={styles.formActionsRow}>
-              <button className={styles.saveBtn} type="submit" disabled={saving || uploading}>
+          {items.length === 0 ? (
+            <div className={styles.emptyBox}>
+              <p className={styles.emptyTitle}>Belum ada produk</p>
+              <p className={styles.emptyDesc}>
+                Gunakan tombol di bawah untuk menambahkan produk pertama Anda.
+              </p>
+              <button
+                type="button"
+                className={styles.btnO}
+                onClick={handleOpenAdd}
+                style={{ marginTop: "4px" }}
+              >
                 <svg
                   width="16"
                   height="16"
@@ -717,48 +661,10 @@ export default function AdminPage() {
                   strokeLinejoin="round"
                   aria-hidden="true"
                 >
-                  <path d="m5 12 5 5L20 7" />
+                  <path d="M12 5v14m-7-7h14" />
                 </svg>
-                {saving
-                  ? "Menyimpan..."
-                  : editingId !== null
-                  ? "Perbarui produk"
-                  : "Simpan produk"}
+                Tambah produk baru
               </button>
-
-              {editingId !== null && (
-                <button className={styles.btnO} type="button" onClick={resetForm}>
-                  Batal
-                </button>
-              )}
-            </div>
-
-            {/* Feedback simpan */}
-            {formMsg && (
-              <div
-                className={`${styles.feedback} ${
-                  formMsg.isError ? styles.feedbackError : styles.feedbackSuccess
-                }`}
-              >
-                {formMsg.text}
-              </div>
-            )}
-          </form>
-        </section>
-
-        {/* Section Daftar Produk */}
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.h2}>Daftar produk</h2>
-            <span className={styles.count}>{items.length}</span>
-          </div>
-
-          {items.length === 0 ? (
-            <div className={styles.emptyBox}>
-              <p className={styles.emptyTitle}>Belum ada produk</p>
-              <p className={styles.emptyDesc}>
-                Gunakan formulir di atas untuk menambahkan produk pertama Anda.
-              </p>
             </div>
           ) : (
             <ol className={styles.productList}>
@@ -864,6 +770,206 @@ export default function AdminPage() {
           )}
         </section>
       </div>
+
+      {/* POPUP SIDEBAR / DRAWER FORM UPLOAD & EDIT PRODUK */}
+      {isSidebarOpen && (
+        <>
+          <div
+            className={styles.backdrop}
+            onClick={handleCloseSidebar}
+            aria-hidden="true"
+          />
+          <aside className={styles.sidebar} role="dialog" aria-modal="true">
+            <div className={styles.sidebarHeader}>
+              <h3 className={styles.sidebarTitle}>
+                {editingId !== null ? "Edit produk" : "Tambah produk baru"}
+              </h3>
+              <button
+                type="button"
+                className={styles.closeBtn}
+                onClick={handleCloseSidebar}
+                aria-label="Tutup formulir"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form
+              onSubmit={handleSaveProduct}
+              style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+            >
+              <div className={styles.formGroup}>
+                <label htmlFor="judul" className={styles.label}>
+                  Judul produk
+                </label>
+                <input
+                  className={styles.fld}
+                  id="judul"
+                  type="text"
+                  required
+                  placeholder="Contoh: Kemeja Oversize Linen Premium"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="link" className={styles.label}>
+                  Link produk <span className={styles.labelDesc}>(afiliasi / toko online)</span>
+                </label>
+                <input
+                  className={styles.fld}
+                  id="link"
+                  type="url"
+                  required
+                  placeholder="https://shopee.co.id/..."
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                />
+              </div>
+
+              {/* Bagian Foto Produk */}
+              <div className={styles.formGroup}>
+                <span className={styles.label}>Foto produk</span>
+                <div className={styles.photoRow}>
+                  <div className={styles.photoPreview}>
+                    {previewSrc ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={previewSrc} alt="" onError={() => setPreviewSrc("")} />
+                    ) : (
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect x="3" y="3" width="18" height="18" rx="3" />
+                        <circle cx="9" cy="9" r="1.5" />
+                        <path d="m21 15-4.5-4.5L6 21" />
+                      </svg>
+                    )}
+                  </div>
+
+                  <div className={styles.photoActions}>
+                    <label className={styles.btnO} htmlFor="foto">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 16V4m0 0L7 9m5-5 5 5M4 20h16" />
+                      </svg>
+                      {uploading ? "Mengunggah..." : "Pilih berkas foto"}
+                      <input
+                        className={styles.sr}
+                        id="foto"
+                        type="file"
+                        accept="image/*"
+                        ref={fileRef}
+                        onChange={handleFileUpload}
+                        disabled={uploading}
+                      />
+                    </label>
+
+                    <input
+                      className={styles.fld}
+                      id="url-foto"
+                      type="url"
+                      aria-label="Link gambar"
+                      placeholder="Atau tempel link gambar (URL)"
+                      value={imageUrl}
+                      onChange={(e) => {
+                        setImageUrl(e.target.value);
+                        setPreviewSrc(e.target.value.trim());
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Switch Tampilkan di Website */}
+              <label className={styles.switchRow}>
+                <span className={styles.switchText}>
+                  <span className={styles.switchTitle}>Tampilkan di website</span>
+                  <span className={styles.switchDesc}>Produk langsung terlihat oleh pengunjung web</span>
+                </span>
+                <input
+                  className={styles.switch}
+                  type="checkbox"
+                  checked={active}
+                  onChange={(e) => setActive(e.target.checked)}
+                />
+              </label>
+
+              {/* Tombol Simpan & Batal */}
+              <div className={styles.formActionsRow}>
+                <button className={styles.saveBtn} type="submit" disabled={saving || uploading}>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m5 12 5 5L20 7" />
+                  </svg>
+                  {saving
+                    ? "Menyimpan..."
+                    : editingId !== null
+                    ? "Perbarui produk"
+                    : "Simpan produk"}
+                </button>
+
+                <button
+                  className={styles.btnO}
+                  type="button"
+                  onClick={handleCloseSidebar}
+                >
+                  Batal
+                </button>
+              </div>
+
+              {/* Feedback simpan */}
+              {formMsg && (
+                <div
+                  className={`${styles.feedback} ${
+                    formMsg.isError ? styles.feedbackError : styles.feedbackSuccess
+                  }`}
+                >
+                  {formMsg.text}
+                </div>
+              )}
+            </form>
+          </aside>
+        </>
+      )}
     </div>
   );
 }

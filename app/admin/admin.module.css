@@ -1,0 +1,284 @@
+/* admin.module.css */
+
+.root {
+  --bg: #f6f5f2;
+  --card: #fff;
+  --text: #1d1d1b;
+  --muted: #6b6a66;
+  --line: #e4e2dc;
+  --accent: #1f5eff;
+  --accent-fg: #fff;
+  --danger: #c62828;
+  --field: #fff;
+  --thumb: #ecebe6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .root {
+    --bg: #141413;
+    --card: #1e1e1c;
+    --text: #f1f0ec;
+    --muted: #9b9a94;
+    --line: #2e2e2b;
+    --accent: #6e97ff;
+    --accent-fg: #0d1a3d;
+    --danger: #ff7b72;
+    --field: #151514;
+    --thumb: #2a2a27;
+  }
+}
+
+.root * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.root {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.4;
+  min-height: 100vh;
+}
+
+.main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 56px;
+}
+
+.loginMain {
+  max-width: 380px;
+  margin: 12vh auto 0;
+  padding: 24px 16px 56px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.h1 {
+  font-size: 1.35rem;
+}
+
+.h2 {
+  font-size: 1.05rem;
+  margin-bottom: 12px;
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 12px 0 4px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.fileInput {
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+  max-width: 100%;
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.checkInput {
+  width: 18px;
+  height: 18px;
+}
+
+.preview {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: var(--thumb);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.btnPrimary {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+
+.btnDanger {
+  color: var(--danger);
+}
+
+.msg {
+  font-size: 0.85rem;
+  margin-top: 10px;
+  min-height: 1.2em;
+  color: var(--muted);
+}
+
+.msgErr {
+  color: var(--danger);
+}
+
+.list {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 24px 56px 1fr;
+  gap: 10px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.rowOff {
+  opacity: 0.55;
+}
+
+.rowNo {
+  text-align: center;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.rowThumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--thumb);
+}
+
+.rowTitle {
+  font-weight: 600;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.rowUrl {
+  font-size: 0.78rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tools {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.toolsBtn {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.toolsBtn:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.toolsBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toolsBtnDanger {
+  color: var(--danger);
+}
+
+.toolsCheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-right: auto;
+  cursor: pointer;
+}
+
+.toolsCheck input {
+  width: 18px;
+  height: 18px;
+}
+
+.empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 20px 0;
+}

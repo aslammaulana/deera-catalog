@@ -1,0 +1,29 @@
+/* ProfileHeader.module.css */
+
+.header {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 28px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+.avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ecebe6;
+  display: block;
+  margin: 0 auto 14px;
+}
+
+.name {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.bio {
+  font-size: 1.05rem;
+  margin-top: 4px;
+  opacity: 0.9;
+}
